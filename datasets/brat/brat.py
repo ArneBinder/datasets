@@ -1,3 +1,4 @@
+import glob
 from dataclasses import dataclass
 from os import path
 
@@ -78,22 +79,25 @@ class Brat(nlp.GeneratorBasedBuilder):
             If str or List[str], then the dataset returns only the 'train' split.
             If dict, then keys should be from the `nlp.Split` enum.
         """
-        if isinstance(self.config.data_files, (str, list, tuple)):
-            # Handle case with only one split
-            files = self.config.data_files
-            if isinstance(files, str):
-                files = [files]
-            return [nlp.SplitGenerator(name=nlp.Split.TRAIN, gen_kwargs={"files": files})]
+        if self.config.data_dir is not None:
+            return [nlp.SplitGenerator(name=nlp.Split.TRAIN, gen_kwargs={"directory": self.config.data_dir})]
         else:
-            # Handle case with several splits and a dict mapping
-            splits = []
-            for split_name in [nlp.Split.TRAIN, nlp.Split.VALIDATION, nlp.Split.TEST]:
-                if split_name in self.config.data_files:
-                    files = self.config.data_files[split_name]
-                    if isinstance(files, str):
-                        files = [files]
-                    splits.append(nlp.SplitGenerator(name=split_name, gen_kwargs={"files": files}))
-            return splits
+            if isinstance(self.config.data_files, (str, list, tuple)):
+                # Handle case with only one split
+                files = self.config.data_files
+                if isinstance(files, str):
+                    files = [files]
+                return [nlp.SplitGenerator(name=nlp.Split.TRAIN, gen_kwargs={"files": files})]
+            else:
+                # Handle case with several splits and a dict mapping
+                splits = []
+                for split_name in [nlp.Split.TRAIN, nlp.Split.VALIDATION, nlp.Split.TEST]:
+                    if split_name in self.config.data_files:
+                        files = self.config.data_files[split_name]
+                        if isinstance(files, str):
+                            files = [files]
+                        splits.append(nlp.SplitGenerator(name=split_name, gen_kwargs={"files": files}))
+                return splits
 
     @staticmethod
     def _get_location(location_string):
@@ -260,8 +264,13 @@ class Brat(nlp.GeneratorBasedBuilder):
                                      f'specification.')
         return res
 
-    def _generate_examples(self, files):
-        """ Read files sequentially, then lines sequentially. """
+    def _generate_examples(self, files=None, directory=None):
+        """ Read context (.txt) and annotation (.ann) files. """
+        if files is None:
+            assert directory is not None, 'If files is None, directory has to be provided, but it is also None.'
+            _files = glob.glob(f"{directory}/*.{self.config.ann_file_extension}")
+            files = [fn[:-(len(self.config.ann_file_extension) + 1)] for fn in _files]
+
         for filename in files:
             basename = path.basename(filename)
 
