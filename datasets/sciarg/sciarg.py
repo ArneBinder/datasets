@@ -77,7 +77,7 @@ class Sciarg(Brat):
         # dl_manager is a nlp.download.DownloadManager that can be used to
         # download and extract URLs
         dl_dir = dl_manager.download_and_extract(_URL)
-        data_dir = os.path.join(dl_dir, "sci-arg")
+        data_dir = os.path.join(dl_dir, "compiled_corpus")
         print(f'data_dir: {data_dir}')
         return [
             nlp.SplitGenerator(
@@ -85,8 +85,6 @@ class Sciarg(Brat):
                 # These kwargs will be passed to _generate_examples
                 gen_kwargs={
                     "directory": data_dir,
-                    #'labelpath': os.path.join(data_dir, 'train_{}-labels.lst'.format(self.config.data_size)),
-                    #"split": "train",
                 },
             ),
         ]
