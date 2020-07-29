@@ -5,13 +5,7 @@ import os
 
 import nlp
 
-########################################################################################################################
-### taken from https://github.com/ArneBinder/nlp/blob/brat/datasets/brat/brat.py                                     ###
-########################################################################################################################
-
-
-########################################################################################################################
-from datasets.brat.brat import BratConfig, Brat
+from datasets.brat.brat import BratConfig, AbstractBrat
 
 _CITATION = """
 @inproceedings{lauscher2018b,
@@ -42,7 +36,7 @@ class SciargConfig(BratConfig):
     """ BuilderConfig for SciArg"""
 
 
-class Sciarg(Brat):
+class Sciarg(AbstractBrat):
 
     VERSION = nlp.Version("1.0.0")
 
