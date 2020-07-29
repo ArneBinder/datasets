@@ -1,4 +1,5 @@
 import glob
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from os import path
 
@@ -13,7 +14,7 @@ class BratConfig(nlp.BuilderConfig):
     txt_file_extension: str = 'txt'
 
 
-class Brat(nlp.GeneratorBasedBuilder):
+class AbstractBrat(nlp.GeneratorBasedBuilder, ABC):
     BUILDER_CONFIG_CLASS = BratConfig
 
     def _info(self):
@@ -73,31 +74,9 @@ class Brat(nlp.GeneratorBasedBuilder):
             })
         )
 
+    @abstractmethod
     def _split_generators(self, dl_manager):
-        """ The `datafiles` kwarg in load_dataset() can be a str, List[str], Dict[str,str], or Dict[str,List[str]].
-
-            If str or List[str], then the dataset returns only the 'train' split.
-            If dict, then keys should be from the `nlp.Split` enum.
-        """
-        if self.config.data_dir is not None:
-            return [nlp.SplitGenerator(name=nlp.Split.TRAIN, gen_kwargs={"directory": self.config.data_dir})]
-        else:
-            if isinstance(self.config.data_files, (str, list, tuple)):
-                # Handle case with only one split
-                files = self.config.data_files
-                if isinstance(files, str):
-                    files = [files]
-                return [nlp.SplitGenerator(name=nlp.Split.TRAIN, gen_kwargs={"files": files})]
-            else:
-                # Handle case with several splits and a dict mapping
-                splits = []
-                for split_name in [nlp.Split.TRAIN, nlp.Split.VALIDATION, nlp.Split.TEST]:
-                    if split_name in self.config.data_files:
-                        files = self.config.data_files[split_name]
-                        if isinstance(files, str):
-                            files = [files]
-                        splits.append(nlp.SplitGenerator(name=split_name, gen_kwargs={"files": files}))
-                return splits
+        pass
 
     @staticmethod
     def _get_location(location_string):
@@ -118,7 +97,7 @@ class Brat(nlp.GeneratorBasedBuilder):
             'id': _id,
             'text': text,
             'type': _type,
-            'locations': [Brat._get_location(loc) for loc in locations.split(';')]
+            'locations': [AbstractBrat._get_location(loc) for loc in locations.split(';')]
         }
 
     @staticmethod
@@ -244,19 +223,19 @@ class Brat(nlp.GeneratorBasedBuilder):
                 line = line[:-1]
 
                 if ann_type == 'T':
-                    res['spans'].append(Brat._get_span_annotation(line))
+                    res['spans'].append(AbstractBrat._get_span_annotation(line))
                 elif ann_type == 'E':
-                    res['events'].append(Brat._get_event_annotation(line))
+                    res['events'].append(AbstractBrat._get_event_annotation(line))
                 elif ann_type == 'R':
-                    res['relations'].append(Brat._get_relation_annotation(line))
+                    res['relations'].append(AbstractBrat._get_relation_annotation(line))
                 elif ann_type == '*':
-                    res['relations'].append(Brat._get_equivalence_relation_annotation(line))
+                    res['relations'].append(AbstractBrat._get_equivalence_relation_annotation(line))
                 elif ann_type in ['A', 'M']:
-                    res['attributions'].append(Brat._get_attribute_annotation(line))
+                    res['attributions'].append(AbstractBrat._get_attribute_annotation(line))
                 elif ann_type == 'N':
-                    res['normalizations'].append(Brat._get_normalization_annotation(line))
+                    res['normalizations'].append(AbstractBrat._get_normalization_annotation(line))
                 elif ann_type == '#':
-                    res['notes'].append(Brat._get_note_annotation(line))
+                    res['notes'].append(AbstractBrat._get_note_annotation(line))
                 else:
                     raise ValueError(f'unknown BRAT id type: {line[0]}. Annotation ids have to start with T (spans), '
                                      f'E (events), R (relations), A (attributions), or N (normalizations). See '
@@ -275,10 +254,39 @@ class Brat(nlp.GeneratorBasedBuilder):
             basename = path.basename(filename)
 
             ann_fn = f'{filename}.{self.config.ann_file_extension}'
-            brat_annotations = Brat._read_annotation_file(ann_fn)
+            brat_annotations = AbstractBrat._read_annotation_file(ann_fn)
 
             txt_fn = f'{filename}.{self.config.txt_file_extension}'
             txt_content = open(txt_fn).read()
             brat_annotations['context'] = txt_content
 
             yield basename, brat_annotations
+
+
+class Brat(AbstractBrat):
+
+    def _split_generators(self, dl_manager):
+        """ The `datafiles` kwarg in load_dataset() can be a str, List[str], Dict[str,str], or Dict[str,List[str]].
+
+            If str or List[str], then the dataset returns only the 'train' split.
+            If dict, then keys should be from the `nlp.Split` enum.
+        """
+        if self.config.data_dir is not None:
+            return [nlp.SplitGenerator(name=nlp.Split.TRAIN, gen_kwargs={"directory": self.config.data_dir})]
+        else:
+            if isinstance(self.config.data_files, (str, list, tuple)):
+                # Handle case with only one split
+                files = self.config.data_files
+                if isinstance(files, str):
+                    files = [files]
+                return [nlp.SplitGenerator(name=nlp.Split.TRAIN, gen_kwargs={"files": files})]
+            else:
+                # Handle case with several splits and a dict mapping
+                splits = []
+                for split_name in [nlp.Split.TRAIN, nlp.Split.VALIDATION, nlp.Split.TEST]:
+                    if split_name in self.config.data_files:
+                        files = self.config.data_files[split_name]
+                        if isinstance(files, str):
+                            files = [files]
+                        splits.append(nlp.SplitGenerator(name=split_name, gen_kwargs={"files": files}))
+                return splits
