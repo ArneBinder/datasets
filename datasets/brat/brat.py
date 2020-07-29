@@ -248,7 +248,7 @@ class AbstractBrat(nlp.GeneratorBasedBuilder, ABC):
         if files is None:
             assert directory is not None, 'If files is None, directory has to be provided, but it is also None.'
             _files = glob.glob(f"{directory}/*.{self.config.ann_file_extension}")
-            files = [fn[:-(len(self.config.ann_file_extension) + 1)] for fn in _files]
+            files = [path.splitext(fn)[0] for fn in _files]
 
         for filename in files:
             basename = path.basename(filename)
