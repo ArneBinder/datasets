@@ -5,7 +5,7 @@ import os
 
 import nlp
 
-from datasets.brat.brat import BratConfig, AbstractBrat
+from datasets.brat.brat import AbstractBrat
 
 _CITATION = """
 @inproceedings{lauscher2018b,
@@ -29,24 +29,9 @@ scientific writing.
 _URL = "http://data.dws.informatik.uni-mannheim.de/sci-arg/compiled_corpus.zip"
 
 
-# Using a specific configuration class is optional, you can also use the base class if you don't need
-# to add specific attributes.
-# here we give an example for three sub-set of the dataset with difference sizes.
-class SciargConfig(BratConfig):
-    """ BuilderConfig for SciArg"""
-
-
 class Sciarg(AbstractBrat):
 
     VERSION = nlp.Version("1.0.0")
-
-    # This is an example of a dataset with multiple configurations.
-    # If you don't want/need to define several sub-sets in your dataset,
-    # just remove the BUILDER_CONFIG_CLASS and the BUILDER_CONFIGS attributes.
-    BUILDER_CONFIG_CLASS = SciargConfig
-    #BUILDER_CONFIGS = [
-    #    NewDatasetConfig(name="my_dataset_" + size, description="A small dataset", data_size=size) for size in ["small", "medium", "large"]
-    #]
 
     def _info(self):
 
