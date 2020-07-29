@@ -1,12 +1,7 @@
 
 from __future__ import absolute_import, division, print_function
 
-import json
 import os
-
-
-from dataclasses import dataclass
-from os import path
 
 import nlp
 
@@ -30,7 +25,6 @@ _CITATION = """
 }
 """
 
-# TODO: Add description of the dataset here
 _DESCRIPTION = """\
 This dataset is an extension of the Dr. Inventor corpus (Fisas et al., 2015, 2016) with an annotation layer containing 
 fine-grained argumentative components and relations. It is the first argument-annotated corpus of scientific 
