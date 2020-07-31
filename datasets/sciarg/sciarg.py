@@ -5,7 +5,9 @@ import os
 
 import nlp
 
-from datasets.brat.brat import AbstractBrat
+# requires to install nlp-formats:
+# pip install git+https://github.com/ArneBinder/nlp-formats
+from nlp_formats.brat import AbstractBrat
 
 _CITATION = """
 @inproceedings{lauscher2018b,
