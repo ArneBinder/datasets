@@ -6,7 +6,7 @@ import os
 import nlp
 
 # requires to install nlp-formats:
-# pip install git+https://github.com/ArneBinder/nlp-formats
+# pip install git+https://github.com/ArneBinder/nlp-formats@v0.1.0
 from nlp_formats.brat import AbstractBrat
 
 _CITATION = """
