@@ -21,6 +21,7 @@ class Brat(GeneratorBasedBuilder, ABC):
         return DatasetInfo(
             features=Features({
                 "context": Value("string"),
+                "file_name": Value("string"),
                 "spans": Sequence({
                     "id": Value("string"),
                     "type": Value("string"),
@@ -259,6 +260,7 @@ class Brat(GeneratorBasedBuilder, ABC):
             txt_fn = f'{filename}.{self.config.txt_file_extension}'
             txt_content = open(txt_fn).read()
             brat_annotations['context'] = txt_content
+            brat_annotations['file_name'] = basename
 
             yield basename, brat_annotations
 
